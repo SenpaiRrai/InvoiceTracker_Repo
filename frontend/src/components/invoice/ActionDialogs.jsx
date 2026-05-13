@@ -1,0 +1,192 @@
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { STAGE_LABELS } from "@/lib/constants";
+import { api } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+
+export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanced }) => {
+  const [notes, setNotes] = useState("");
+  const [grnNumber, setGrnNumber] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const reset = () => {
+    setNotes("");
+    setGrnNumber("");
+  };
+
+  const submit = async () => {
+    if (nextStage === "GRN_RAISED" && !grnNumber) {
+      toast.error("GRN number is required");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data } = await api.post(`/invoices/${invoice.id}/advance`, {
+        notes,
+        grn_number: nextStage === "GRN_RAISED" ? grnNumber : undefined,
+      });
+      toast.success(`Advanced to ${STAGE_LABELS[data.status]}`);
+      reset();
+      onOpenChange(false);
+      onAdvanced?.(data);
+    } catch (err) {
+      console.warn("[advance] failed:", err?.message);
+      toast.error(err.response?.data?.detail || "Could not advance");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="rounded-none border-[#09090B]" data-testid="advance-dialog">
+        <DialogHeader>
+          <DialogTitle className="font-display font-black text-2xl tracking-tight">Advance Invoice</DialogTitle>
+          <p className="text-sm text-[#52525B]">
+            Moving from <span className="font-semibold">{STAGE_LABELS[invoice.status]}</span> →{" "}
+            <span className="font-semibold text-[#16A34A]">{nextStage && STAGE_LABELS[nextStage]}</span>
+          </p>
+        </DialogHeader>
+        {nextStage === "GRN_RAISED" && (
+          <div>
+            <Label className="label-caps">GRN Number *</Label>
+            <Input
+              value={grnNumber}
+              onChange={(e) => setGrnNumber(e.target.value)}
+              placeholder="GRN-2026-0001"
+              className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
+              data-testid="grn-number-input"
+              required
+            />
+          </div>
+        )}
+        <div>
+          <Label className="label-caps">Notes</Label>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
+            data-testid="advance-notes-input"
+          />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-none">Cancel</Button>
+          <Button onClick={submit} disabled={loading} className="rounded-none bg-[#16A34A] hover:bg-[#15803D] text-white" data-testid="confirm-advance-button">
+            {loading ? "Advancing…" : "Confirm advance"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const ReturnDialog = ({ open, onOpenChange, invoice, onReturned }) => {
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (!reason) {
+      toast.error("Please provide a reason");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data } = await api.post(`/invoices/${invoice.id}/return-to-vendor`, { reason });
+      toast.success("Returned to vendor");
+      setReason("");
+      onOpenChange(false);
+      onReturned?.(data);
+    } catch (err) {
+      console.warn("[return] failed:", err?.message);
+      toast.error(err.response?.data?.detail || "Could not return");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="rounded-none border-[#F59E0B]" data-testid="return-dialog">
+        <DialogHeader>
+          <DialogTitle className="font-display font-black text-2xl tracking-tight">Return to Vendor</DialogTitle>
+          <p className="text-sm text-[#52525B]">
+            This will pause the workflow and mark the invoice as <span className="font-semibold">Returned to Vendor</span>.
+          </p>
+        </DialogHeader>
+        <div>
+          <Label className="label-caps">Reason *</Label>
+          <Textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            placeholder="Wrong amount / missing GST / etc."
+            className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
+            data-testid="return-reason-input"
+            required
+          />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-none">Cancel</Button>
+          <Button onClick={submit} disabled={loading} className="rounded-none bg-[#F59E0B] hover:bg-[#D97706] text-white" data-testid="confirm-return-button">
+            {loading ? "Returning…" : "Confirm return"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const ResubmitDialog = ({ open, onOpenChange, invoice, onResubmitted }) => {
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.post(`/invoices/${invoice.id}/resubmit`, { notes });
+      toast.success("Invoice resubmitted");
+      setNotes("");
+      onOpenChange(false);
+      onResubmitted?.(data);
+    } catch (err) {
+      console.warn("[resubmit] failed:", err?.message);
+      toast.error(err.response?.data?.detail || "Could not resubmit");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="rounded-none border-[#7A1A2C]" data-testid="resubmit-dialog">
+        <DialogHeader>
+          <DialogTitle className="font-display font-black text-2xl tracking-tight">Resubmit Invoice</DialogTitle>
+          <p className="text-sm text-[#52525B]">
+            Mark this as resubmitted by the vendor after correction. Will restart at <span className="font-semibold">Bill Received</span>.
+          </p>
+        </DialogHeader>
+        <div>
+          <Label className="label-caps">Notes</Label>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
+            data-testid="resubmit-notes-input"
+          />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-none">Cancel</Button>
+          <Button onClick={submit} disabled={loading} className="rounded-none bg-[#7A1A2C] hover:bg-[#5C1421] text-white" data-testid="confirm-resubmit-button">
+            {loading ? "Submitting…" : "Confirm resubmit"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

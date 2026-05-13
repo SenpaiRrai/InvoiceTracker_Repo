@@ -1,0 +1,84 @@
+{
+  "theme": "light",
+  "archetype": "Swiss & High-Contrast (Archetype 4)",
+  "typography": {
+    "heading_font": "Chivo, sans-serif",
+    "body_font": "'IBM Plex Sans', sans-serif",
+    "heading_weights": [400, 700, 900],
+    "body_weights": [400, 500, 600],
+    "h1": "text-4xl tracking-tight leading-none",
+    "h2": "text-2xl tracking-tight leading-tight",
+    "h3": "text-xl tracking-tight",
+    "body": "text-base leading-relaxed",
+    "small_label": "text-xs tracking-[0.1em] uppercase font-semibold"
+  },
+  "color_palette": {
+    "background": "#F8F9FA",
+    "surface": "#FFFFFF",
+    "border": "#E5E7EB",
+    "text_primary": "#09090B",
+    "text_secondary": "#52525B",
+    "primary": "#2563EB",
+    "primary_hover": "#1D4ED8",
+    "destructive": "#E11D48",
+    "destructive_hover": "#BE123C",
+    "success": "#16A34A",
+    "success_hover": "#15803D",
+    "warning": "#F59E0B"
+  },
+  "layout_spacing": {
+    "container_padding": "p-6 md:p-8",
+    "gap_tight": "gap-4",
+    "gap_standard": "gap-6",
+    "gap_loose": "gap-12",
+    "grid_dashboard": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "surface_style": "flat solid surfaces with 1px border-border, max rounded-sm, no shadows."
+  },
+  "component_guidelines": {
+    "cards": "Strictly flat, 1px borders, square or max rounded-sm corners. No soft shadows. Use hover effects like -translate-y-0.5 with border darkening.",
+    "timeline_stepper": "Vertical layout for details pane. Use solid 2px left border. Nodes are square rather than round, colored based on status (blue for active, green for verified, red for returned/stuck).",
+    "buttons": "Sharp edges, zero or 2px border radius. High contrast text.",
+    "tables": "Zebra-less rows. Bottom border on rows only. Minimalist, dense layout. Use small text for data.",
+    "badges": "Square, solid color background, bold uppercase text. Example: STUCK (Red bg, White text)."
+  },
+  "animations": {
+    "hover": "transition-colors duration-200 ease-in-out",
+    "modal_enter": "animate-in fade-in zoom-in duration-200",
+    "alert_chime": "visual pulse on the stuck invoice row/badge, red border flashing slightly (animate-pulse)"
+  },
+  "icons_library": "@phosphor-icons/react",
+  "media": {
+    "login_background": {
+      "url": "https://images.unsplash.com/photo-1744148621897-5fb0b6323543?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwY29uY3JldGUlMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzc4NTcwNTI3fDA&ixlib=rb-4.1.0&q=85",
+      "category": "background",
+      "description": "Minimalist concrete architecture, used for a structured, serious login page background."
+    },
+    "avatars": [
+      {
+        "url": "https://images.pexels.com/photos/12902922/pexels-photo-12902922.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "user_avatar",
+        "description": "Dean/Department Head female avatar"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1737573744382-73c017a9ab25?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNDR8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBvZmZpY2UlMjB3b3JrZXIlMjBwb3J0cmFpdHxlbnwwfHx8fDE3Nzg1NzA1Mjd8MA&ixlib=rb-4.1.0&q=85",
+        "category": "user_avatar",
+        "description": "Finance/Stores Staff male avatar"
+      }
+    ]
+  },
+  "accessibility": {
+    "contrast": "Ensure 4.5:1 ratio for text on colored backgrounds. Avoid gray-on-gray.",
+    "testing_attributes": "All interactive elements must have data-testid in kebab-case."
+  },
+  "instructions_to_main_agent": [
+    "Build a Multi-role Auth System (Stores Staff, Dept Head, Dean, Finance, Admin).",
+    "Implement Invoice Table with status tracking and timeline visualization.",
+    "Use Phosphor Icons for a technical, precise look.",
+    "Charts should use Recharts (bar chart for TAT, pie/donut for stage distribution).",
+    "Stuck invoices (>3 days) MUST have a distinct red 'STUCK' badge and trigger an alert (visual pulse + browser/toast notification).",
+    "Design a detail view modal or side-panel showing the step-by-step audit trail (timeline) for an invoice.",
+    "Apply 'Swiss & High-Contrast' principles: remove gradients, use 1px hard borders, keep it flat and data-dense.",
+    "Use Chivo for headings and IBM Plex Sans for body text.",
+    "Use data-testid on every button, input, and row action."
+  ]
+}
