@@ -5,7 +5,7 @@ import { LayoutDashboard, FileText, BarChart3, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROLE_LABELS } from "@/lib/constants";
 
-const LOGO_URL = "https://customer-assets.emergentagent.com/job_invoice-status-pulse/artifacts/5ja3p6f2__Logo_Bje6PBpwg.webp";
+const LOGO_URL = "MAHELogo.webp";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, test: "nav-dashboard" },
