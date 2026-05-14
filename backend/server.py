@@ -297,56 +297,55 @@ def _is_stuck(inv: dict) -> bool:
 # ---------------------------------------------------------------------------
 # Startup
 # ---------------------------------------------------------------------------
-@app.on_event("startup")
-async def startup():
-    # Indexes
-    await db.users.create_index("email", unique=True)
-    await db.users.create_index("id", unique=True)
-    await db.invoices.create_index("id", unique=True)
-    await db.invoices.create_index("invoice_number")
-    await db.invoices.create_index("status")
-    await db.invoices.create_index("vendor_name")
+pass
+    # # Indexes
+    # await db.users.create_index("email", unique=True)
+    # await db.users.create_index("id", unique=True)
+    # await db.invoices.create_index("id", unique=True)
+    # await db.invoices.create_index("invoice_number")
+    # await db.invoices.create_index("status")
+    # await db.invoices.create_index("vendor_name")
 
-    # Seed admin
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@stores.com").lower()
-    admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
-    existing = await db.users.find_one({"email": admin_email})
-    if not existing:
-        await db.users.insert_one({
-            "id": str(uuid.uuid4()),
-            "email": admin_email,
-            "name": "Stores Admin",
-            "role": "admin",
-            "password_hash": hash_password(admin_password),
-            "created_at": _iso_now(),
-        })
-        logger.info(f"Admin seeded: {admin_email}")
-    elif not verify_password(admin_password, existing["password_hash"]):
-        await db.users.update_one(
-            {"email": admin_email},
-            {"$set": {"password_hash": hash_password(admin_password)}},
-        )
+    # # Seed admin
+    # admin_email = os.environ.get("ADMIN_EMAIL", "admin@stores.com").lower()
+    # admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
+    # existing = await db.users.find_one({"email": admin_email})
+    # if not existing:
+    #     await db.users.insert_one({
+    #         "id": str(uuid.uuid4()),
+    #         "email": admin_email,
+    #         "name": "Stores Admin",
+    #         "role": "admin",
+    #         "password_hash": hash_password(admin_password),
+    #         "created_at": _iso_now(),
+    #     })
+    #     logger.info(f"Admin seeded: {admin_email}")
+    # elif not verify_password(admin_password, existing["password_hash"]):
+    #     await db.users.update_one(
+    #         {"email": admin_email},
+    #         {"$set": {"password_hash": hash_password(admin_password)}},
+    #     )
 
-    # Seed demo role users for quick testing
-    demo_users = [
-        ("stores@stores.com", "Stores Staff", "stores_staff"),
-        ("userdept@stores.com", "User Dept", "user_dept"),
-        ("depthead@stores.com", "Dept Head", "dept_head"),
-        ("dean@stores.com", "Dean", "dean"),
-        ("finance@stores.com", "Finance", "finance"),
-    ]
-    for email, name, role in demo_users:
-        if not await db.users.find_one({"email": email}):
-            await db.users.insert_one({
-                "id": str(uuid.uuid4()),
-                "email": email,
-                "name": name,
-                "role": role,
-                "password_hash": hash_password("password123"),
-                "created_at": _iso_now(),
-            })
+    # # Seed demo role users for quick testing
+    # demo_users = [
+    #     ("stores@stores.com", "Stores Staff", "stores_staff"),
+    #     ("userdept@stores.com", "User Dept", "user_dept"),
+    #     ("depthead@stores.com", "Dept Head", "dept_head"),
+    #     ("dean@stores.com", "Dean", "dean"),
+    #     ("finance@stores.com", "Finance", "finance"),
+    # ]
+    # for email, name, role in demo_users:
+    #     if not await db.users.find_one({"email": email}):
+    #         await db.users.insert_one({
+    #             "id": str(uuid.uuid4()),
+    #             "email": email,
+    #             "name": name,
+    #             "role": role,
+    #             "password_hash": hash_password("password123"),
+    #             "created_at": _iso_now(),
+    #         })
 
-    init_storage()
+    # init_storage()
 
 
 @app.on_event("shutdown")
