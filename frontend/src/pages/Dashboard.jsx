@@ -54,9 +54,8 @@ const Dashboard = () => {
   }
 
   const distData = STAGE_ORDER.concat(["RETURNED_TO_VENDOR"])
-    .map((k, i) => ({ name: STAGE_LABELS[k], value: summary.stage_distribution[k] || 0, color: COLORS[i % COLORS.length], key: k }))
+    .map((k, i) => ({ name: STAGE_LABELS[k], value: (summary?.stage_distribution && summary.stage_distribution[k]) || 0, color: COLORS[i % COLORS.length], key: k }))
     .filter((d) => d.value > 0);
-
   return (
     <div className="max-w-[1400px]" data-testid="dashboard-page">
       {/* Subtle campus banner — themes the page without fighting data density */}
