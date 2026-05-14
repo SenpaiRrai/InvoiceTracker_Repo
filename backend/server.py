@@ -358,8 +358,8 @@ async def shutdown_db_client():
 # Auth endpoints
 # ---------------------------------------------------------------------------
 def _set_auth_cookies(response: Response, access: str, refresh: str):
-    response.set_cookie(key="access_token", value=access, httponly=True, secure=False, samesite="lax", max_age=43200, path="/")
-    response.set_cookie(key="refresh_token", value=refresh, httponly=True, secure=False, samesite="lax", max_age=604800, path="/")
+    response.set_cookie(key="access_token", value=access, httponly=True, secure=True, samesite="none", max_age=43200, path="/")
+    response.set_cookie(key="refresh_token", value=refresh, httponly=True, secure=True, samesite="none", max_age=604800, path="/")
 
 
 @api_router.post("/auth/register")
