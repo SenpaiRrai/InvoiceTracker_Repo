@@ -89,7 +89,7 @@ const Dashboard = () => {
         </Link>
       </header>
 
-      {stuck.length > 0 && (
+      {Array.isArray(stuck) && stuck.length > 0 && (
         <div className="border-2 border-[#E11D48] bg-[#FEF2F2] p-5 mb-6 stuck-pulse" data-testid="stuck-banner">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-[#E11D48] mt-0.5" />
