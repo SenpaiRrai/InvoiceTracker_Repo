@@ -124,14 +124,9 @@ const Login = () => {
           </form>
 
           <div className="mt-10 pt-6 border-t border-[#E5E7EB]">
-            <div className="label-caps mb-3">Quick role logins (demo)</div>
+            <div className="label-caps mb-3">Quick role logins</div>
             <div className="grid grid-cols-2 gap-2 text-xs font-mono-data text-[#52525B]">
-              <div>cajoprice@gmail.com</div><div>admin123</div>
-              <div>stores@stores.com</div><div>password123</div>
-              <div>depthead@stores.com</div><div>password123</div>
-              <div>dean@stores.com</div><div>password123</div>
-              <div>finance@stores.com</div><div>password123</div>
-              <div>userdept@stores.com</div><div>password123</div>
+              <div>Stores Manipal ID</div><div>Official Password</div>
             </div>
           </div>
         </div>
