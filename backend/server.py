@@ -38,8 +38,6 @@ db = client[os.environ["DB_NAME"]]
 JWT_ALGORITHM = "HS256"
 APP_NAME = os.environ.get("APP_NAME", "invoiceflow")
 STUCK_DAYS = int(os.environ.get("STUCK_THRESHOLD_DAYS", "3"))
-STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
-EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
 
@@ -183,55 +181,27 @@ class ReturnRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Object storage helpers (Emergent)
+# Object storage helpers 
 # ---------------------------------------------------------------------------
-storage_key: Optional[str] = None
 
+import base64
 
-def init_storage() -> Optional[str]:
-    global storage_key
-    if storage_key:
-        return storage_key
-    if not EMERGENT_KEY:
-        logger.warning("EMERGENT_LLM_KEY missing — storage disabled")
-        return None
-    try:
-        resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
-        resp.raise_for_status()
-        storage_key = resp.json()["storage_key"]
-        logger.info("Object storage initialized")
-        return storage_key
-    except Exception as e:
-        logger.error(f"Storage init failed: {e}")
-        return None
+# This stores files directly in your MongoDB collection 'file_storage'
+async def put_object(path: str, data: bytes, content_type: str) -> dict:
+    encoded_data = base64.b64encode(data).decode('utf-8')
+    await db.file_storage.insert_one({
+        "path": path,
+        "data": encoded_data,
+        "content_type": content_type,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"path": path}
 
-
-def put_object(path: str, data: bytes, content_type: str) -> dict:
-    key = init_storage()
-    if not key:
-        raise HTTPException(status_code=503, detail="Storage unavailable")
-    resp = requests.put(
-        f"{STORAGE_URL}/objects/{path}",
-        headers={"X-Storage-Key": key, "Content-Type": content_type},
-        data=data,
-        timeout=120,
-    )
-    resp.raise_for_status()
-    return resp.json()
-
-
-def get_object(path: str):
-    key = init_storage()
-    if not key:
-        raise HTTPException(status_code=503, detail="Storage unavailable")
-    resp = requests.get(
-        f"{STORAGE_URL}/objects/{path}",
-        headers={"X-Storage-Key": key},
-        timeout=60,
-    )
-    resp.raise_for_status()
-    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
-
+async def get_object(path: str):
+    file_doc = await db.file_storage.find_one({"path": path})
+    if not file_doc:
+        raise HTTPException(status_code=404, detail="File not found")
+    return base64.b64decode(file_doc["data"]), file_doc["content_type"]
 
 # ---------------------------------------------------------------------------
 # Email helper
@@ -345,9 +315,6 @@ async def startup():
                 "password_hash": hash_password("password123"),
                 "created_at": _iso_now(),
             })
-
-    init_storage()
-
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
@@ -611,7 +578,7 @@ async def upload_attachment(invoice_id: str, file: UploadFile = File(...), user:
     if len(data) > 20 * 1024 * 1024:
         raise HTTPException(status_code=413, detail="File too large (max 20MB)")
     content_type = file.content_type or "application/octet-stream"
-    result = put_object(path, data, content_type)
+    result = await put_object(path, data, content_type)
     record = {
         "id": str(uuid.uuid4()),
         "storage_path": result["path"],
@@ -636,7 +603,7 @@ async def download_file(path: str, request: Request, auth: Optional[str] = Query
         jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
-    data, ctype = get_object(path)
+    data, ctype = await get_object(path)
     return Response(content=data, media_type=ctype)
 
 
