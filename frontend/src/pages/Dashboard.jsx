@@ -134,7 +134,7 @@ const Dashboard = () => {
             <div className="py-12 text-center text-sm text-[#52525B]">No invoices yet. Create your first one to begin.</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              <div style={{ height: 260 }}>
+              <div style={{ height: 260, minWidth: 0 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={distData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} innerRadius={50} paddingAngle={2}>
