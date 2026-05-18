@@ -19,7 +19,7 @@ export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanc
   };
 
   const submit = async () => {
-    if (nextStage === "GRN/SRN_RAISED" && !grnNumber) {
+    if (nextStage === "GRN_RAISED" && !grnNumber) {
       toast.error("GRN/SRN number is required");
       return;
     }
@@ -27,7 +27,7 @@ export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanc
     try {
       const { data } = await api.post(`/invoices/${invoice.id}/advance`, {
         notes,
-        grn_number: nextStage === "GRN/SRN_RAISED" ? grnNumber : undefined,
+        grn_number: nextStage === "GRN_RAISED" ? grnNumber : undefined,
       });
       toast.success(`Advanced to ${STAGE_LABELS[data.status]}`);
       reset();
@@ -51,7 +51,7 @@ export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanc
             <span className="font-semibold text-[#16A34A]">{nextStage && STAGE_LABELS[nextStage]}</span>
           </p>
         </DialogHeader>
-        {nextStage === "GRN/SRN_RAISED" && (
+        {nextStage === "GRN_RAISED" && (
           <div>
             <Label className="label-caps">GRN/SRN Number *</Label>
             <Input
