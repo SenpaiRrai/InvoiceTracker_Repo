@@ -19,15 +19,15 @@ export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanc
   };
 
   const submit = async () => {
-    if (nextStage === "GRN_RAISED" && !grnNumber) {
-      toast.error("GRN number is required");
+    if (nextStage === "GRN/SRN_RAISED" && !grnNumber) {
+      toast.error("GRN/SRN number is required");
       return;
     }
     setLoading(true);
     try {
       const { data } = await api.post(`/invoices/${invoice.id}/advance`, {
         notes,
-        grn_number: nextStage === "GRN_RAISED" ? grnNumber : undefined,
+        grn_number: nextStage === "GRN/SRN_RAISED" ? grnNumber : undefined,
       });
       toast.success(`Advanced to ${STAGE_LABELS[data.status]}`);
       reset();
@@ -51,13 +51,13 @@ export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanc
             <span className="font-semibold text-[#16A34A]">{nextStage && STAGE_LABELS[nextStage]}</span>
           </p>
         </DialogHeader>
-        {nextStage === "GRN_RAISED" && (
+        {nextStage === "GRN/SRN_RAISED" && (
           <div>
-            <Label className="label-caps">GRN Number *</Label>
+            <Label className="label-caps">GRN/SRN Number *</Label>
             <Input
               value={grnNumber}
               onChange={(e) => setGrnNumber(e.target.value)}
-              placeholder="GRN-2026-0001"
+              placeholder="GRN/SRN-2026-0001"
               className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
               data-testid="grn-number-input"
               required
