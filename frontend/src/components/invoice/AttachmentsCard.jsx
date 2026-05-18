@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Paperclip } from "lucide-react";
+import { Paperclip, Trash2 } from "lucide-react";
 import { api } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { formatDateTime } from "@/lib/constants";
@@ -57,6 +57,20 @@ const AttachmentsCard = ({ invoiceId, attachments, onUploaded }) => {
     }
   };
 
+  // --- NEW: Function to delete an attachment ---
+  const handleDelete = async (e, attachmentId) => {
+    e.stopPropagation(); // Prevents triggering the download
+    if (window.confirm("Are you sure you want to delete this attachment?")) {
+      try {
+        await api.delete(`/invoices/${invoiceId}/attachments/${attachmentId}`);
+        toast.success("Attachment deleted");
+        onUploaded?.(); // Refresh the data
+      } catch (err) {
+        toast.error("Failed to delete attachment");
+      }
+    }
+  };
+
   const items = attachments || [];
 
   return (
@@ -76,7 +90,20 @@ const AttachmentsCard = ({ invoiceId, attachments, onUploaded }) => {
       </div>
       {items.length > 0 ? (
         <div className="space-y-2">
-          {items.map((att) => <AttachmentItem key={att.id} att={att} onClick={handleDownload} />)}
+          {items.map((att) => (
+            <div key={att.id} className="relative group">
+              <AttachmentItem att={att} onClick={handleDownload} />
+              
+              {/* Delete Button - only visible on hover */}
+              <button 
+                onClick={(e) => handleDelete(e, att.id)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white text-red-500 opacity-0 group-hover:opacity-100 hover:bg-red-50 transition-all border border-red-100"
+                title="Delete file"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="text-sm text-[#52525B] py-4 text-center border border-dashed border-[#E5E7EB]">
