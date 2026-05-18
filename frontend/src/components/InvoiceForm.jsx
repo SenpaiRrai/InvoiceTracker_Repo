@@ -120,7 +120,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
             </div>
           </div>
           <div>
-            <Label className="label-caps">PO Reference</Label>
+            <Label className="label-caps">PO/WO Reference</Label>
             <Input
               value={form.po_reference}
               onChange={(e) => setForm({ ...form, po_reference: e.target.value })}
