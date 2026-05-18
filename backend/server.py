@@ -802,6 +802,49 @@ async def send_digest(user: dict = Depends(get_current_user)):
     email_id = await send_email(user["email"], f"[InvoiceFlow] {len(stuck)} invoices stuck", html)
     return {"sent": bool(email_id), "count": len(stuck), "email_id": email_id, "no_api_key": not bool(RESEND_API_KEY)}
 
+# 1. Delete an entire invoice
+@api_router.delete("/invoices/{invoice_id}")
+async def delete_invoice(invoice_id: str, user: dict = Depends(get_current_user)):
+    result = await db.invoices.delete_one({"id": invoice_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    # Also delete any files associated with this invoice in your file_storage collection
+    await db.file_storage.delete_many({"path": {"$regex": f"invoices/{invoice_id}/"}})
+    return {"status": "deleted"}
+
+# 2. Edit invoice data
+@api_router.put("/invoices/{invoice_id}")
+async def update_invoice(invoice_id: str, payload: InvoiceCreate, user: dict = Depends(get_current_user)):
+    update_data = payload.model_dump()
+    update_data["updated_at"] = _iso_now()
+    result = await db.invoices.update_one({"id": invoice_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    return {"status": "updated"}
+
+# 3. Delete a specific PDF/Image attachment
+@api_router.delete("/invoices/{invoice_id}/attachments/{attachment_id}")
+async def delete_attachment(invoice_id: str, attachment_id: str, user: dict = Depends(get_current_user)):
+    # Find the invoice
+    inv = await db.invoices.find_one({"id": invoice_id})
+    if not inv:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    
+    # Find the specific attachment to get its storage path
+    attachment = next((a for a in inv.get("attachments", []) if a["id"] == attachment_id), None)
+    if not attachment:
+        raise HTTPException(status_code=404, detail="Attachment not found")
+    
+    # Remove from MongoDB file_storage collection
+    await db.file_storage.delete_one({"path": attachment["storage_path"]})
+    
+    # Remove from the invoice's attachment list
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$pull": {"attachments": {"id": attachment_id}}}
+    )
+    return {"status": "attachment deleted"}
+
 
 # ---------------------------------------------------------------------------
 # Router registration
