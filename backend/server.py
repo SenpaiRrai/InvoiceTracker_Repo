@@ -47,7 +47,7 @@ if RESEND_API_KEY:
 STAGES = [
     "RECEIVED",
     "USER_DEPT_VERIFICATION",
-    "GRN/SRN_RAISED",
+    "GRN_RAISED",
     "DEPT_HEAD_CERTIFICATION",
     "MAY_BE_PAID_STAMP",
     "DEAN_CERTIFICATION",
@@ -58,7 +58,7 @@ STAGES = [
 STAGE_LABELS = {
     "RECEIVED": "Bill Received",
     "USER_DEPT_VERIFICATION": "User Dept Verification",
-    "GRN/SRN_RAISED": "GRN/SRN Raised",
+    "GRN_RAISED": "GRN/SRN Raised",
     "DEPT_HEAD_CERTIFICATION": "Dept Head Certification",
     "MAY_BE_PAID_STAMP": "May Be Paid / To Be Paid Stamp",
     "DEAN_CERTIFICATION": "Dean Certification",
@@ -167,13 +167,13 @@ class InvoiceCreate(BaseModel):
     invoice_number: str
     invoice_date: str  # ISO date
     amount: float
-    po/wo_reference: Optional[str] = ""
+    po_reference: Optional[str] = ""
     description: Optional[str] = ""
 
 
 class StageAdvanceRequest(BaseModel):
     notes: Optional[str] = ""
-    grn/srn_number: Optional[str] = None  # Required when moving into GRN/SRN_RAISED
+    grn_number: Optional[str] = None  # Required when moving into GRN_RAISED
 
 
 class ReturnRequest(BaseModel):
@@ -393,7 +393,7 @@ async def get_stages():
         "roles_allowed_to_advance": {
             "RECEIVED": ["stores_staff", "admin"],
             "USER_DEPT_VERIFICATION": ["user_dept", "stores_staff", "admin"],
-            "GRN/SRN_RAISED": ["stores_staff", "admin"],
+            "GRN_RAISED": ["stores_staff", "admin"],
             "DEPT_HEAD_CERTIFICATION": ["dept_head", "stores_staff", "admin"],
             "MAY_BE_PAID_STAMP": ["stores_staff", "admin"],
             "DEAN_CERTIFICATION": ["dean", "stores_staff", "admin"],
@@ -417,10 +417,10 @@ async def create_invoice(payload: InvoiceCreate, user: dict = Depends(get_curren
         "invoice_number": payload.invoice_number,
         "invoice_date": payload.invoice_date,
         "amount": float(payload.amount),
-        "po/wo_reference": payload.po/wo_reference or "",
+        "po_reference": payload.po_reference or "",
         "description": payload.description or "",
         "status": "RECEIVED",
-        "grn/srn_number": None,
+        "grn_number": None,
         "created_by": user["id"],
         "created_by_name": user["name"],
         "created_at": now,
@@ -451,7 +451,7 @@ async def list_invoices(
             {"invoice_number": {"$regex": search, "$options": "i"}},
             {"vendor_name": {"$regex": search, "$options": "i"}},
             {"po/wo_reference": {"$regex": search, "$options": "i"}},
-            {"grn/srn_number": {"$regex": search, "$options": "i"}},
+            {"grn_number": {"$regex": search, "$options": "i"}},
         ]
     cursor = db.invoices.find(query, {"_id": 0}).sort("created_at", -1)
     items = await cursor.to_list(2000)
@@ -511,11 +511,11 @@ async def advance_invoice(invoice_id: str, payload: StageAdvanceRequest, user: d
     extra: dict = {}
     update: dict = {"status": next_stage, "updated_at": _iso_now()}
 
-    if next_stage == "GRN/SRN_RAISED":
-        if not payload.grn/srn_number:
-            raise HTTPException(status_code=400, detail="grn/srn_number is required when moving to GRN/SRN_RAISED")
-        extra["grn/srn_number"] = payload.grn/srn_number
-        update["grn/srn_number"] = payload.grn/srn_number
+    if next_stage == "GRN_RAISED":
+        if not payload.grn_number:
+            raise HTTPException(status_code=400, detail="grn_number is required when moving to GRN/SRN_RAISED")
+        extra["grn_number"] = payload.grn_number
+        update["grn_number"] = payload.grn_number
 
     if next_stage == "PAID":
         update["completed_at"] = _iso_now()
@@ -753,7 +753,7 @@ async def export_csv(user: dict = Depends(get_current_user)):
             inv.get("amount", ""),
             inv.get("invoice_date", ""),
             inv.get("po/wo_reference", ""),
-            inv.get("grn/srn_number", "") or "",
+            inv.get("grn_number", "") or "",
             STAGE_LABELS.get(inv.get("status", ""), inv.get("status", "")),
             inv.get("created_at", ""),
             inv.get("completed_at", "") or "",
