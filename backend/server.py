@@ -450,7 +450,7 @@ async def list_invoices(
         query["$or"] = [
             {"invoice_number": {"$regex": search, "$options": "i"}},
             {"vendor_name": {"$regex": search, "$options": "i"}},
-            {"po/wo_reference": {"$regex": search, "$options": "i"}},
+            {"po_reference": {"$regex": search, "$options": "i"}},
             {"grn_number": {"$regex": search, "$options": "i"}},
         ]
     cursor = db.invoices.find(query, {"_id": 0}).sort("created_at", -1)
@@ -752,7 +752,7 @@ async def export_csv(user: dict = Depends(get_current_user)):
             inv.get("vendor_name", ""),
             inv.get("amount", ""),
             inv.get("invoice_date", ""),
-            inv.get("po/wo_reference", ""),
+            inv.get("po_reference", ""),
             inv.get("grn_number", "") or "",
             STAGE_LABELS.get(inv.get("status", ""), inv.get("status", "")),
             inv.get("created_at", ""),
