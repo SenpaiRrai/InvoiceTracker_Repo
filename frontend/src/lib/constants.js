@@ -1,7 +1,7 @@
 export const STAGE_ORDER = [
   "RECEIVED",
   "USER_DEPT_VERIFICATION",
-  "GRN_RAISED",
+  "GRN/SRN_RAISED",
   "DEPT_HEAD_CERTIFICATION",
   "MAY_BE_PAID_STAMP",
   "DEAN_CERTIFICATION",
@@ -12,7 +12,7 @@ export const STAGE_ORDER = [
 export const STAGE_LABELS = {
   RECEIVED: "Bill Received",
   USER_DEPT_VERIFICATION: "User Dept Verification",
-  GRN_RAISED: "GRN Raised",
+  GRN_RAISED: "GRN/SRN Raised",
   DEPT_HEAD_CERTIFICATION: "Dept Head Certification",
   MAY_BE_PAID_STAMP: "May Be Paid / To Be Paid Stamp",
   DEAN_CERTIFICATION: "Dean Certification",
@@ -24,7 +24,7 @@ export const STAGE_LABELS = {
 export const STAGE_SHORT = {
   RECEIVED: "Received",
   USER_DEPT_VERIFICATION: "User Dept",
-  GRN_RAISED: "GRN",
+  GRN_RAISED: "GRN/SRN",
   DEPT_HEAD_CERTIFICATION: "Dept Head",
   MAY_BE_PAID_STAMP: "MBP Stamp",
   DEAN_CERTIFICATION: "Dean",
