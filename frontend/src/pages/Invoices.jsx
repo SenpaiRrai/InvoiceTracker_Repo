@@ -5,7 +5,7 @@ import { STAGE_LABELS, STAGE_SHORT, STAGE_ORDER, formatCurrency, formatDate, hou
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Download, Search, ChevronRight, AlertTriangle } from "lucide-react";
+import { Plus, Download, Search, ChevronRight, AlertTriangle, Trash2, Pencil, FileText } from "lucide-react";
 import InvoiceForm from "@/components/InvoiceForm";
 import { toast } from "sonner";
 
@@ -45,6 +45,7 @@ const Invoices = () => {
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingInvoice, setEditingInvoice]= useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -69,6 +70,27 @@ const Invoices = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     load();
+  };
+
+  const handleDelete = async (e, id, num) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to delete invoice ${num}?`)) {
+      try {
+        await api.delete(`/invoices/${id}`);
+        toast.success("Invoice deleted");
+        load(); // This reloads the list
+      } catch (err) {
+        toast.error("Failed to delete invoice");
+      }
+    }
+  };
+
+  const handleEdit = (e, inv) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditingInvoice(inv);
+    setShowForm(true);
   };
 
   const exportCsv = async () => {
@@ -148,6 +170,7 @@ const Invoices = () => {
                 <th className="px-4 py-3 label-caps">Status</th>
                 <th className="px-4 py-3 label-caps">At Stage</th>
                 <th className="px-4 py-3 label-caps">GRN/SRN</th>
+                <th className="px-4 py-3 label-caps text-center">Scan</th>
                 <th className="px-4 py-3 w-10"></th>
               </tr>
             </thead>
@@ -166,11 +189,42 @@ const Invoices = () => {
                       {hoursToHuman(inv.hours_in_current_stage)}
                     </td>
                     <td className="px-4 py-3 font-mono-data text-[#52525B]">{inv.grn_number || "—"}</td>
+                    <td className="px-4 py-3">
+  {inv.attachments && inv.attachments.length > 0 ? (
+    <a 
+      href={`${API}/files/${inv.attachments[0].storage_path}`} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="text-[#52525B] hover:text-[#09090B] transition-colors"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <FileText className="w-5 h-5" />
+    </a>
+  ) : (
+    <span className="text-gray-300">—</span>
+  )}
+</td>
                     <td className="px-4 py-3 text-right">
-                      <Link to={`/invoices/${inv.id}`} className="inline-flex items-center text-[#7A1A2C] hover:text-[#5C1421]" data-testid={`open-invoice-${inv.invoice_number}`}>
-                        <ChevronRight className="w-4 h-4" />
-                      </Link>
-                    </td>
+  <div className="flex items-center justify-end gap-1">
+    <button 
+      onClick={(e) => handleEdit(e, inv)} 
+      className="p-1.5 text-[#52525B] hover:text-blue-600 transition-colors"
+      title="Edit Data"
+    >
+      <Pencil className="w-4 h-4" />
+    </button>
+    <button 
+      onClick={(e) => handleDelete(e, inv.id, inv.invoice_number)} 
+      className="p-1.5 text-[#52525B] hover:text-red-600 transition-colors"
+      title="Delete Invoice"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
+    <Link to={`/invoices/${inv.id}`} className="p-1.5 text-[#7A1A2C] hover:text-[#5C1421]">
+      <ChevronRight className="w-4 h-4" />
+    </Link>
+  </div>
+</td>
                   </tr>
                 ))
               )}
@@ -179,7 +233,14 @@ const Invoices = () => {
         </div>
       </div>
 
-      <InvoiceForm open={showForm} onOpenChange={setShowForm} onCreated={load} />
+     <InvoiceForm open={showForm} 
+  onOpenChange={(open) => {
+    setShowForm(open);
+    if (!open) setEditingInvoice(null); // Clear edit mode when closed
+  }} 
+  onCreated={load} 
+  invoice={editingInvoice} // Pass the invoice if we are editing
+/>
     </div>
   );
 };
