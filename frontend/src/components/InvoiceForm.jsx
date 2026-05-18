@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import React, { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,17 +8,34 @@ import { api } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Upload, X, FileText } from "lucide-react";
 
-const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
+// Added "invoice" to props to handle editing
+const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
   const [form, setForm] = useState({
     vendor_name: "",
     invoice_number: "",
     invoice_date: new Date().toISOString().split("T")[0],
     amount: "",
-    po_reference: "",
+    po_wo_reference: "", // Updated name to match your new scheme
     description: "",
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // This hook fills the form if we are editing an existing invoice
+  useEffect(() => {
+    if (invoice) {
+      setForm({
+        vendor_name: invoice.vendor_name || "",
+        invoice_number: invoice.invoice_number || "",
+        invoice_date: invoice.invoice_date?.split("T")[0] || "",
+        amount: invoice.amount || "",
+        po_wo_reference: invoice.po_wo_reference || "",
+        description: invoice.description || "",
+      });
+    } else {
+      reset();
+    }
+  }, [invoice, open]);
 
   const reset = () => {
     setForm({
@@ -26,7 +43,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
       invoice_number: "",
       invoice_date: new Date().toISOString().split("T")[0],
       amount: "",
-      po_reference: "",
+      po_wo_reference: "",
       description: "",
     });
     setFile(null);
@@ -40,28 +57,30 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
     }
     setLoading(true);
     try {
-      const { data: inv } = await api.post("/invoices", {
-        ...form,
-        amount: parseFloat(form.amount),
-      });
-      if (file) {
-        const fd = new FormData();
-        fd.append("file", file);
-        try {
-          await api.post(`/invoices/${inv.id}/attachments`, fd, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-        } catch (err) {
-          toast.warning("Invoice created but attachment upload failed");
+      if (invoice) {
+        // --- EDIT MODE ---
+        await api.put(`/invoices/${invoice.id}`, {
+          ...form,
+          amount: parseFloat(form.amount),
+        });
+        toast.success("Invoice updated successfully");
+      } else {
+        // --- CREATE MODE ---
+        const { data: inv } = await api.post("/invoices", {
+          ...form,
+          amount: parseFloat(form.amount),
+        });
+        if (file) {
+          const fd = new FormData();
+          fd.append("file", file);
+          await api.post(`/invoices/${inv.id}/attachments`, fd);
         }
+        toast.success(`Invoice ${inv.invoice_number} recorded`);
       }
-      toast.success(`Invoice ${inv.invoice_number} recorded`);
-      reset();
       onOpenChange(false);
-      onCreated?.(inv);
+      onCreated?.();
     } catch (err) {
-      const d = err.response?.data?.detail;
-      toast.error(typeof d === "string" ? d : "Failed to create invoice");
+      toast.error("Error saving data");
     } finally {
       setLoading(false);
     }
@@ -71,8 +90,12 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-none max-w-xl border-[#09090B]" data-testid="invoice-form-dialog">
         <DialogHeader>
-          <DialogTitle className="font-display font-black text-2xl tracking-tight">New Invoice</DialogTitle>
-          <p className="text-sm text-[#52525B]">Record a bill received from a vendor. Workflow begins at <span className="font-semibold">Bill Received</span>.</p>
+          <DialogTitle className="font-display font-black text-2xl tracking-tight">
+            {invoice ? "Edit Invoice" : "New Invoice"}
+          </DialogTitle>
+          <DialogDescription>
+            {invoice ? "Update the details for this invoice." : "Record a new bill received from a vendor."}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4 pt-2" data-testid="invoice-form">
           <div className="grid grid-cols-2 gap-4">
@@ -81,8 +104,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
               <Input
                 value={form.vendor_name}
                 onChange={(e) => setForm({ ...form, vendor_name: e.target.value })}
-                className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
-                data-testid="invoice-vendor-input"
+                className="mt-2 rounded-none border-[#E5E7EB]"
                 required
               />
             </div>
@@ -91,8 +113,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
               <Input
                 value={form.invoice_number}
                 onChange={(e) => setForm({ ...form, invoice_number: e.target.value })}
-                className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
-                data-testid="invoice-number-input"
+                className="mt-2 rounded-none border-[#E5E7EB]"
                 required
               />
             </div>
@@ -102,8 +123,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
                 type="date"
                 value={form.invoice_date}
                 onChange={(e) => setForm({ ...form, invoice_date: e.target.value })}
-                className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
-                data-testid="invoice-date-input"
+                className="mt-2 rounded-none border-[#E5E7EB]"
               />
             </div>
             <div>
@@ -113,8 +133,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
                 step="0.01"
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
-                data-testid="invoice-amount-input"
+                className="mt-2 rounded-none border-[#E5E7EB]"
                 required
               />
             </div>
@@ -122,10 +141,9 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
           <div>
             <Label className="label-caps">PO/WO Reference</Label>
             <Input
-              value={form.po_reference}
-              onChange={(e) => setForm({ ...form, po_reference: e.target.value })}
-              className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
-              data-testid="invoice-po-input"
+              value={form.po_wo_reference}
+              onChange={(e) => setForm({ ...form, po_wo_reference: e.target.value })}
+              className="mt-2 rounded-none border-[#E5E7EB]"
             />
           </div>
           <div>
@@ -134,56 +152,39 @@ const InvoiceForm = ({ open, onOpenChange, onCreated }) => {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={2}
-              className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
-              data-testid="invoice-description-input"
+              className="mt-2 rounded-none border-[#E5E7EB]"
             />
           </div>
-          <div>
-            <Label className="label-caps">Scanned Bill (PDF/Image, max 20MB)</Label>
-            <div className="mt-2">
-              {file ? (
-                <div className="flex items-center justify-between border border-[#E5E7EB] p-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <FileText className="w-4 h-4 text-[#7A1A2C]" />
-                    <span className="truncate max-w-[300px]">{file.name}</span>
-                    <span className="text-xs text-[#52525B]">({(file.size / 1024).toFixed(0)} KB)</span>
-                  </div>
-                  <button type="button" onClick={() => setFile(null)} data-testid="remove-file-button">
-                    <X className="w-4 h-4 text-[#52525B] hover:text-[#09090B]" />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex items-center justify-center gap-2 border border-dashed border-[#52525B] p-4 cursor-pointer hover:border-[#09090B] hover:bg-[#F8F9FA] transition-colors">
-                  <Upload className="w-4 h-4" />
-                  <span className="text-sm">Click to upload scanned invoice</span>
-                  <input
-                    type="file"
-                    accept=".pdf,.png,.jpg,.jpeg,.webp"
-                    className="hidden"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    data-testid="invoice-file-input"
-                  />
-                </label>
-              )}
+          
+          {/* File upload only shown when creating a new invoice */}
+          {!invoice && (
+            <div>
+              <Label className="label-caps">Scanned Bill (PDF/Image)</Label>
+              <div className="mt-2">
+                <Input 
+                  type="file" 
+                  onChange={(e) => setFile(e.target.files[0])}
+                  className="rounded-none border-dashed border-2" 
+                />
+              </div>
             </div>
-          </div>
+          )}
+          
           <DialogFooter className="pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               className="rounded-none border-[#E5E7EB]"
-              data-testid="invoice-form-cancel"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="rounded-none bg-[#09090B] hover:bg-[#27272A] text-white"
-              data-testid="invoice-form-submit"
+              className="rounded-none bg-[#09090B] text-white"
             >
-              {loading ? "Saving…" : "Create Invoice →"}
+              {loading ? "Saving…" : (invoice ? "Save Changes" : "Create Invoice →")}
             </Button>
           </DialogFooter>
         </form>
