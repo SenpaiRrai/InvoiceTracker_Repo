@@ -113,7 +113,7 @@ const Invoices = () => {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search invoice #, vendor, PO, GRN"
+              placeholder="Search invoice #, vendor, PO/WO, GRN/SRN"
               className="rounded-none border-[#E5E7EB] pl-9 focus-visible:ring-0 focus-visible:border-[#09090B]"
               data-testid="search-input"
             />
@@ -147,7 +147,7 @@ const Invoices = () => {
                 <th className="px-4 py-3 label-caps">Date</th>
                 <th className="px-4 py-3 label-caps">Status</th>
                 <th className="px-4 py-3 label-caps">At Stage</th>
-                <th className="px-4 py-3 label-caps">GRN</th>
+                <th className="px-4 py-3 label-caps">GRN/SRN</th>
                 <th className="px-4 py-3 w-10"></th>
               </tr>
             </thead>
