@@ -52,7 +52,7 @@ STAGES = [
     "MAY_BE_PAID_STAMP",
     "DEAN_CERTIFICATION",
     "SCANNED_SENT_TO_FINANCE",
-    "PAID",
+    "PROCESSED",
 ]
 
 STAGE_LABELS = {
@@ -63,7 +63,7 @@ STAGE_LABELS = {
     "MAY_BE_PAID_STAMP": "May Be Paid / To Be Paid Stamp",
     "DEAN_CERTIFICATION": "Dean Certification",
     "SCANNED_SENT_TO_FINANCE": "Scanned & Sent to Finance",
-    "PAID": "Payment Processed",
+    "PROCESSED": "Invoice Processed/Received by Finance",
     "RETURNED_TO_VENDOR": "Returned to Vendor",
 }
 
@@ -606,7 +606,25 @@ async def download_file(path: str, request: Request, auth: Optional[str] = Query
     data, ctype = await get_object(path)
     return Response(content=data, media_type=ctype)
 
-
+@api_router.post("/invoices/{invoice_id}/finance-return")
+async def finance_return(invoice_id: str, payload: ReturnRequest, user: dict = Depends(get_current_user)):
+    inv = await db.invoices.find_one({"id": invoice_id})
+    if not inv or inv["status"] != "SCANNED_SENT_TO_FINANCE":
+        raise HTTPException(status_code=400, detail="Invalid stage for finance return")
+    
+    # Move back to DEAN_CERTIFICATION
+    prev_stage = "DEAN_CERTIFICATION"
+    history_entry = _build_history_entry(prev_stage, user, f"FINANCE RETURN: {payload.reason}")
+    
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {
+            "$set": {"status": prev_stage, "updated_at": _iso_now()},
+            "$push": {"history": history_entry},
+        },
+    )
+    return {"status": "returned to dean"}
+    
 # ---------------------------------------------------------------------------
 # Analytics
 # ---------------------------------------------------------------------------
