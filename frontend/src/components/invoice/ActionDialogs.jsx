@@ -10,32 +10,57 @@ import { toast } from "sonner";
 
 export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanced }) => {
   const [notes, setNotes] = useState("");
-  const [grnNumber, setGrnNumber] = useState("");
+  const [grn, setGrn] = useState("");
+  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const reset = () => {
     setNotes("");
-    setGrnNumber("");
+    setGrn("");
+    setFile(null);
   };
 
-  const submit = async () => {
-    if (nextStage === "GRN_RAISED" && !grnNumber) {
+  const handleAdvance = async () => {
+    if (nextStage === "GRN_RAISED" && !grn) {
       toast.error("GRN/SRN number is required");
       return;
     }
+
+    if (nextStage === "SCANNED_SENT_TO_FINANCE" && !file) {
+      toast.error("Please upload the scanned bill before sending to Finance.");
+      return;
+    }
+
     setLoading(true);
+
     try {
+      // Step 1: Advance invoice stage
       const { data } = await api.post(`/invoices/${invoice.id}/advance`, {
         notes,
-        grn_number: nextStage === "GRN_RAISED" ? grnNumber : undefined,
+        grn_number: nextStage === "GRN_RAISED" ? grn : undefined,
       });
+
+      // Step 2: Upload attachment if available
+      if (file) {
+        const fd = new FormData();
+        fd.append("file", file);
+
+        await api.post(`/invoices/${invoice.id}/attachments`, fd, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
       toast.success(`Advanced to ${STAGE_LABELS[data.status]}`);
+
       reset();
       onOpenChange(false);
       onAdvanced?.(data);
+
     } catch (err) {
       console.warn("[advance] failed:", err?.message);
-      toast.error(err.response?.data?.detail || "Could not advance");
+      toast.error(err.response?.data?.detail || "Could not advance invoice");
     } finally {
       setLoading(false);
     }
@@ -45,27 +70,54 @@ export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanc
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-none border-[#09090B]" data-testid="advance-dialog">
         <DialogHeader>
-          <DialogTitle className="font-display font-black text-2xl tracking-tight">Advance Invoice</DialogTitle>
+          <DialogTitle className="font-display font-black text-2xl tracking-tight">
+            Advance Invoice
+          </DialogTitle>
+
           <p className="text-sm text-[#52525B]">
-            Moving from <span className="font-semibold">{STAGE_LABELS[invoice.status]}</span> →{" "}
-            <span className="font-semibold text-[#16A34A]">{nextStage && STAGE_LABELS[nextStage]}</span>
+            Moving from{" "}
+            <span className="font-semibold">
+              {STAGE_LABELS[invoice.status]}
+            </span>{" "}
+            →{" "}
+            <span className="font-semibold text-[#16A34A]">
+              {nextStage && STAGE_LABELS[nextStage]}
+            </span>
           </p>
         </DialogHeader>
+
         {nextStage === "GRN_RAISED" && (
           <div>
             <Label className="label-caps">GRN/SRN Number *</Label>
+
             <Input
-              value={grnNumber}
-              onChange={(e) => setGrnNumber(e.target.value)}
+              value={grn}
+              onChange={(e) => setGrn(e.target.value)}
               placeholder="GRN/SRN-2026-0001"
               className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
               data-testid="grn-number-input"
-              required
             />
           </div>
         )}
+
+        {nextStage === "SCANNED_SENT_TO_FINANCE" && (
+          <div>
+            <Label className="label-caps">
+              Upload Scanned Invoice *
+            </Label>
+
+            <Input
+              type="file"
+              onChange={(e) => setFile(e.target.files[0])}
+              className="mt-2 rounded-none border-[#E5E7EB]"
+              data-testid="invoice-file-upload"
+            />
+          </div>
+        )}
+
         <div>
           <Label className="label-caps">Notes</Label>
+
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -74,9 +126,22 @@ export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanc
             data-testid="advance-notes-input"
           />
         </div>
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-none">Cancel</Button>
-          <Button onClick={submit} disabled={loading} className="rounded-none bg-[#16A34A] hover:bg-[#15803D] text-white" data-testid="confirm-advance-button">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="rounded-none"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={handleAdvance}
+            disabled={loading}
+            className="rounded-none bg-[#16A34A] hover:bg-[#15803D] text-white"
+            data-testid="confirm-advance-button"
+          >
             {loading ? "Advancing…" : "Confirm advance"}
           </Button>
         </DialogFooter>
@@ -84,7 +149,6 @@ export const AdvanceDialog = ({ open, onOpenChange, invoice, nextStage, onAdvanc
     </Dialog>
   );
 };
-
 export const ReturnDialog = ({ open, onOpenChange, invoice, onReturned }) => {
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
