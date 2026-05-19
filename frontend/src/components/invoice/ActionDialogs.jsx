@@ -254,3 +254,97 @@ export const ResubmitDialog = ({ open, onOpenChange, invoice, onResubmitted }) =
     </Dialog>
   );
 };
+export const FinanceReturnDialog = ({
+  open,
+  onOpenChange,
+  invoice,
+  onReturned
+}) => {
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (!reason) {
+      toast.error("Please provide a reason");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data } = await api.post(
+        `/invoices/${invoice.id}/finance-return`,
+        { reason }
+      );
+
+      toast.success("Invoice returned by Finance");
+
+      setReason("");
+      onOpenChange(false);
+
+      onReturned?.(data);
+
+    } catch (err) {
+      console.warn("[finance-return] failed:", err?.message);
+
+      toast.error(
+        err.response?.data?.detail ||
+        "Could not process finance return"
+      );
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="rounded-none border-red-500"
+        data-testid="finance-return-dialog"
+      >
+        <DialogHeader>
+          <DialogTitle className="font-display font-black text-2xl tracking-tight">
+            Finance Invoice Return
+          </DialogTitle>
+
+          <p className="text-sm text-[#52525B]">
+            Return invoice back for correction/review.
+          </p>
+        </DialogHeader>
+
+        <div>
+          <Label className="label-caps">
+            Reason *
+          </Label>
+
+          <Textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            placeholder="Reason for finance return..."
+            className="mt-2 rounded-none border-[#E5E7EB] focus-visible:ring-0 focus-visible:border-[#09090B]"
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="rounded-none"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={submit}
+            disabled={loading}
+            className="rounded-none bg-red-500 hover:bg-red-600 text-white"
+          >
+            {loading ? "Returning..." : "Confirm Finance Return"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
