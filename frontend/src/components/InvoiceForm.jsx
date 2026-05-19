@@ -15,7 +15,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
     invoice_number: "",
     invoice_date: new Date().toISOString().split("T")[0],
     amount: "",
-    po_wo_reference: "", // Updated name to match your new scheme
+    po_reference: "", // Updated name to match your new scheme
     description: "",
   });
   const [file, setFile] = useState(null);
@@ -29,7 +29,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
         invoice_number: invoice.invoice_number || "",
         invoice_date: invoice.invoice_date?.split("T")[0] || "",
         amount: invoice.amount || "",
-        po_wo_reference: invoice.po_wo_reference || "",
+        po_reference: invoice.po_reference || "",
         description: invoice.description || "",
       });
     } else {
@@ -43,7 +43,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
       invoice_number: "",
       invoice_date: new Date().toISOString().split("T")[0],
       amount: "",
-      po_wo_reference: "",
+      po_reference: "",
       description: "",
     });
     setFile(null);
@@ -141,8 +141,8 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
           <div>
             <Label className="label-caps">PO/WO Reference</Label>
             <Input
-              value={form.po_wo_reference}
-              onChange={(e) => setForm({ ...form, po_wo_reference: e.target.value })}
+              value={form.po_reference}
+              onChange={(e) => setForm({ ...form, po_reference: e.target.value })}
               className="mt-2 rounded-none border-[#E5E7EB]"
             />
           </div>
