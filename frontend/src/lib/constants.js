@@ -6,7 +6,7 @@ export const STAGE_ORDER = [
   "MAY_BE_PAID_STAMP",
   "DEAN_CERTIFICATION",
   "SCANNED_SENT_TO_FINANCE",
-  "PAID",
+  "PROCESSED",
 ];
 
 export const STAGE_LABELS = {
@@ -17,7 +17,7 @@ export const STAGE_LABELS = {
   MAY_BE_PAID_STAMP: "May Be Paid / To Be Paid Stamp",
   DEAN_CERTIFICATION: "Dean Certification",
   SCANNED_SENT_TO_FINANCE: "Scanned & Sent to Finance",
-  PAID: "Payment Processed",
+  PROCESSED: "Invoice Processed/Received by Finance",
   RETURNED_TO_VENDOR: "Returned to Vendor",
 };
 
@@ -29,7 +29,7 @@ export const STAGE_SHORT = {
   MAY_BE_PAID_STAMP: "MBP Stamp",
   DEAN_CERTIFICATION: "Dean",
   SCANNED_SENT_TO_FINANCE: "Finance",
-  PAID: "Paid",
+  PROCESSED: "Processed",
   RETURNED_TO_VENDOR: "Returned",
 };
 
