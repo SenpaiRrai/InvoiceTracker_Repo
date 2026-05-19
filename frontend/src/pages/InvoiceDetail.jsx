@@ -17,7 +17,7 @@ const getNextStage = (currentStatus) => {
   return STAGE_ORDER[idx + 1];
 };
 
-const ActionBar = ({ inv, nextStage, isFinal, isReturned, onAdvance, onReturn, onResubmit, onEmailDigest }) => (
+const ActionBar = ({ inv, nextStage, isFinal, isReturned, onAdvance, onReturn, onResubmit, onEmailDigest, onFinanceReturn }) => (
   <div className="flex gap-2 flex-wrap">
     {!isFinal && !isReturned && (
       <>
@@ -29,6 +29,13 @@ const ActionBar = ({ inv, nextStage, isFinal, isReturned, onAdvance, onReturn, o
             Advance to {STAGE_LABELS[nextStage]} <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         )}
+        {inv.status === "SCANNED_SENT_TO_FINANCE" && (
+  <Button
+    variant="outline" onClick={() => setShowFinanceReturn(true)} className="rounded-none border-red-500 text-red-500 hover:bg-red-50"
+    data-testid="finance-return-button">
+    Finance Invoice Return
+  </Button>
+)}
       </>
     )}
     {isReturned && (
@@ -52,6 +59,7 @@ const InvoiceDetail = () => {
   const [showAdvance, setShowAdvance] = useState(false);
   const [showReturn, setShowReturn] = useState(false);
   const [showResubmit, setShowResubmit] = useState(false);
+  const [showFinanceReturn, setShowFinanceReturn] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -121,6 +129,7 @@ const InvoiceDetail = () => {
           onAdvance={() => setShowAdvance(true)}
           onReturn={() => setShowReturn(true)}
           onResubmit={() => setShowResubmit(true)}
+          onFinanceReturn={() => setShowFinanceReturn(true)}
           onEmailDigest={triggerEmailDigest}
         />
       </header>
