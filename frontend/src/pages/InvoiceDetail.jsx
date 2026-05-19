@@ -9,7 +9,7 @@ import StatusPill from "@/components/invoice/StatusPill";
 import InvoiceMetaCard from "@/components/invoice/InvoiceMetaCard";
 import AttachmentsCard from "@/components/invoice/AttachmentsCard";
 import TimelineCard from "@/components/invoice/TimelineCard";
-import { AdvanceDialog, ReturnDialog, ResubmitDialog } from "@/components/invoice/ActionDialogs";
+import { AdvanceDialog, ReturnDialog, ResubmitDialog, FinanceReturnDialog } from "@/components/invoice/ActionDialogs";
 
 const getNextStage = (currentStatus) => {
   const idx = STAGE_ORDER.indexOf(currentStatus);
@@ -172,6 +172,12 @@ const InvoiceDetail = () => {
         invoice={inv}
         onResubmitted={setInv}
       />
+      <FinanceReturnDialog
+  open={showFinanceReturn}
+  onOpenChange={setShowFinanceReturn}
+  invoice={inv}
+  onReturned={setInv}
+/>
     </div>
   );
 };
