@@ -31,7 +31,7 @@ const ActionBar = ({ inv, nextStage, isFinal, isReturned, onAdvance, onReturn, o
         )}
         {inv.status === "SCANNED_SENT_TO_FINANCE" && (
   <Button
-    variant="outline" onClick={() => setShowFinanceReturn(true)} className="rounded-none border-red-500 text-red-500 hover:bg-red-50"
+    variant="outline" onClick={onFinanceReturn} className="rounded-none border-red-500 text-red-500 hover:bg-red-50"
     data-testid="finance-return-button">
     Finance Invoice Return
   </Button>
