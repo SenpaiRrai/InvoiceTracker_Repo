@@ -10,7 +10,7 @@ import InvoiceForm from "@/components/InvoiceForm";
 import { toast } from "sonner";
 
 const getStatusBadgeStyle = (status, stuck) => {
-  if (status === "PAID") return { bg: "bg-[#16A34A] text-white", label: "Paid", showIcon: false };
+  if (status === "PROCESSED") return { bg: "bg-[#16A34A] text-white", label: "Processed", showIcon: false };
   if (status === "RETURNED_TO_VENDOR") return { bg: "bg-[#F59E0B] text-white", label: "Returned", showIcon: false };
   return {
     bg: stuck ? "bg-[#E11D48] text-white" : "bg-[#7A1A2C] text-white",
