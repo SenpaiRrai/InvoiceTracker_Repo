@@ -3,7 +3,7 @@ import { AlertTriangle } from "lucide-react";
 import { STAGE_LABELS } from "@/lib/constants";
 
 const getPillStyle = (status, stuck) => {
-  if (status === "PAID") return "bg-[#16A34A] text-white";
+  if (status === "PROCESSED") return "bg-[#16A34A] text-white";
   if (status === "RETURNED_TO_VENDOR") return "bg-[#F59E0B] text-white";
   if (stuck) return "bg-[#E11D48] text-white";
   return "bg-[#7A1A2C] text-white";
