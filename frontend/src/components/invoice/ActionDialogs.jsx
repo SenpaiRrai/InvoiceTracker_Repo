@@ -282,7 +282,11 @@ export const FinanceReturnDialog = ({
       setReason("");
       onOpenChange(false);
 
-      onReturned?.(data);
+      const refreshed = await api.get(
+  `/invoices/${invoice.id}`
+);
+
+onReturned?.(refreshed.data);
 
     } catch (err) {
       console.warn("[finance-return] failed:", err?.message);
