@@ -819,7 +819,7 @@ async def send_digest(user: dict = Depends(get_current_user)):
     </div>
     """
 
-        recipient_list = [
+    recipient_list = [
         email.strip()
         for email in DIGEST_RECIPIENTS.split(",")
         if email.strip()
