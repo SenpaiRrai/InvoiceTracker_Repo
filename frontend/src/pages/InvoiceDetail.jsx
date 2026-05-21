@@ -18,7 +18,7 @@ const getNextStage = (currentStatus) => {
 };
 
 const ActionBar = ({ inv, nextStage, isFinal, isReturned, onAdvance, onReturn, onResubmit, onEmailDigest, onFinanceReturn }) => (
-  <div className="flex gap-2 flex-wrap">
+  <div className="flex flex-col sm:flex-row gap-2 flex-wrap w-full sm:w-auto">
     {!isFinal && !isReturned && (
       <>
         <Button onClick={onReturn} variant="outline" className="rounded-none border-[#F59E0B] text-[#F59E0B] hover:bg-[#F59E0B] hover:text-white" data-testid="return-button">
@@ -108,10 +108,10 @@ const InvoiceDetail = () => {
         <ChevronLeft className="w-4 h-4 mr-1" /> Back to invoices
       </Link>
 
-      <header className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+      <header className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="label-caps mb-2">{inv.vendor_name}</div>
-          <h1 className="font-display font-black text-4xl tracking-tight font-mono-data">{inv.invoice_number}</h1>
+          <h1 className="font-display font-black text-2xl md:text-4x1 tracking-tight font-mono-data">{inv.invoice_number}</h1>
           <div className="flex items-center gap-3 mt-3">
             <StatusPill status={inv.status} stuck={inv.is_stuck} />
             {inv.is_stuck && (
