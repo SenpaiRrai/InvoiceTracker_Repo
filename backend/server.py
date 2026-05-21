@@ -40,6 +40,7 @@ APP_NAME = os.environ.get("APP_NAME", "invoiceflow")
 STUCK_DAYS = int(os.environ.get("STUCK_THRESHOLD_DAYS", "3"))
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+DIGEST_RECIPIENTS = os.environ.get("DIGEST_RECIPIENTS", "")
 
 if RESEND_API_KEY:
     resend.api_key = RESEND_API_KEY
@@ -206,12 +207,12 @@ async def get_object(path: str):
 # ---------------------------------------------------------------------------
 # Email helper
 # ---------------------------------------------------------------------------
-async def send_email(recipient: str, subject: str, html: str) -> Optional[str]:
+async def send_email(recipient: Union[str, list], subject: str, html: str) -> Optional[str]:
     if not RESEND_API_KEY:
         logger.info(f"[EMAIL SKIPPED — no RESEND_API_KEY] to={recipient} subject={subject}")
         return None
     try:
-        params = {"from": SENDER_EMAIL, "to": [recipient], "subject": subject, "html": html}
+        params = {"from": SENDER_EMAIL, "to": recipient if isinstance(recipient, list) else [recipient], "subject": subject, "html": html}
         result = await asyncio.to_thread(resend.Emails.send, params)
         return result.get("id") if isinstance(result, dict) else None
     except Exception as e:
@@ -817,6 +818,14 @@ async def send_digest(user: dict = Depends(get_current_user)):
       </table>
     </div>
     """
+    recipient_list = [
+    email.strip()
+    for email in DIGEST_RECIPIENTS.split(",")
+    if email.strip()
+]
+
+if not recipient_list:
+    recipient_list = [user["email"]]
     email_id = await send_email(user["email"], f"[InvoiceFlow] {len(stuck)} invoices stuck", html)
     return {"sent": bool(email_id), "count": len(stuck), "email_id": email_id, "no_api_key": not bool(RESEND_API_KEY)}
 
