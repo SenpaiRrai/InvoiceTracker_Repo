@@ -826,7 +826,20 @@ async def send_digest(user: dict = Depends(get_current_user)):
 
 if not recipient_list:
     recipient_list = [user["email"]]
-    email_id = await send_email(user["email"], f"[InvoiceFlow] {len(stuck)} invoices stuck", html)
+        recipient_list = [
+        email.strip()
+        for email in DIGEST_RECIPIENTS.split(",")
+        if email.strip()
+    ]
+
+    if not recipient_list:
+        recipient_list = [user["email"]]
+
+    email_id = await send_email(
+        recipient_list,
+        f"[InvoiceFlow] {len(stuck)} invoices stuck",
+        html
+    )
     return {"sent": bool(email_id), "count": len(stuck), "email_id": email_id, "no_api_key": not bool(RESEND_API_KEY)}
 
 # 1. Delete an entire invoice
