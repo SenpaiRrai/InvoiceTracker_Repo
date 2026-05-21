@@ -25,7 +25,7 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen flex bg-[#F8F9FA]">
-      <aside className="w-[240px] border-r border-[#E5E7EB] bg-white flex flex-col" data-testid="sidebar">
+      <aside className="hidden md:flex md:w-[240px] border-r border-[#E5E7EB] bg-white flex-col" data-testid="sidebar">
         <div className="px-6 py-5 border-b border-[#E5E7EB]">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-[#09090B] flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -76,7 +76,17 @@ const Layout = ({ children }) => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <div className="flex-1 flex flex-col overflow-x-hidden">
+        <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-white">
+          <div className="font-display font-black text-lg tracking-tight">
+            InvoiceFlow
+          </div>
+        </div>
+
+        <main className="flex-1 overflow-x-hidden">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };
