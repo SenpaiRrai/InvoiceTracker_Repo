@@ -818,14 +818,7 @@ async def send_digest(user: dict = Depends(get_current_user)):
       </table>
     </div>
     """
-    recipient_list = [
-    email.strip()
-    for email in DIGEST_RECIPIENTS.split(",")
-    if email.strip()
-]
 
-if not recipient_list:
-    recipient_list = [user["email"]]
         recipient_list = [
         email.strip()
         for email in DIGEST_RECIPIENTS.split(",")
