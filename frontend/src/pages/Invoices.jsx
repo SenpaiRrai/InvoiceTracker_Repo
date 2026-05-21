@@ -111,7 +111,7 @@ const Invoices = () => {
   };
 
   return (
-    <div className="p-8 max-w-[1400px]" data-testid="invoices-page">
+    <div className="p-4 md:p-8 max-w-[1400px]" data-testid="invoices-page">
       <header className="mb-6 flex items-end justify-between gap-4 flex-wrap">
         <div>
           <div className="label-caps mb-2">All Invoices</div>
