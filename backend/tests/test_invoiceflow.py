@@ -163,7 +163,7 @@ class TestInvoiceWorkflow:
             "MAY_BE_PAID_STAMP",
             "DEAN_CERTIFICATION",
             "SCANNED_SENT_TO_FINANCE",
-            "PAID",
+            "PROCESSED",
         ]
         for target in remaining_targets:
             r = requests.post(f"{API}/invoices/{inv_id}/advance", json={"notes": f"-> {target}"}, headers=headers)
@@ -173,7 +173,7 @@ class TestInvoiceWorkflow:
         # PAID set completed_at
         r = requests.get(f"{API}/invoices/{inv_id}", headers=headers)
         inv = r.json()
-        assert inv["status"] == "PAID"
+        assert inv["status"] == "PROCESSED"
         assert inv["completed_at"] is not None
 
         # Cannot advance after PAID
