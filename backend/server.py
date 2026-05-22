@@ -260,7 +260,7 @@ def _hours_in_stage(history: List[dict], current_stage: str) -> float:
 
 
 def _is_stuck(inv: dict) -> bool:
-    if inv.get("status") in {"PAID", "RETURNED_TO_VENDOR"}:
+    if inv.get("status") in {"PROCESSED", "RETURNED_TO_VENDOR"}:
         return False
     return _hours_in_stage(inv.get("history", []), inv.get("status", "")) >= STUCK_DAYS * 24
 
@@ -399,7 +399,7 @@ async def get_stages():
             "MAY_BE_PAID_STAMP": ["stores_staff", "admin"],
             "DEAN_CERTIFICATION": ["dean", "stores_staff", "admin"],
             "SCANNED_SENT_TO_FINANCE": ["stores_staff", "admin"],
-            "PAID": ["finance", "admin"],
+            "PROCESSED": ["finance", "admin"],
         },
     }
 
@@ -496,7 +496,7 @@ async def advance_invoice(invoice_id: str, payload: StageAdvanceRequest, user: d
     inv = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
     if not inv:
         raise HTTPException(status_code=404, detail="Invoice not found")
-    if inv["status"] == "PAID":
+    if inv["status"] == "PROCESSED":
         raise HTTPException(status_code=400, detail="Invoice already paid")
     if inv["status"] == "RETURNED_TO_VENDOR":
         raise HTTPException(status_code=400, detail="Invoice was returned to vendor. Use resubmit endpoint.")
@@ -534,7 +534,7 @@ async def return_invoice(invoice_id: str, payload: ReturnRequest, user: dict = D
     inv = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
     if not inv:
         raise HTTPException(status_code=404, detail="Invoice not found")
-    if inv["status"] in {"PAID", "RETURNED_TO_VENDOR"}:
+    if inv["status"] in {"PROCESSED", "RETURNED_TO_VENDOR"}:
         raise HTTPException(status_code=400, detail="Cannot return invoice from this state")
     history_entry = _build_history_entry("RETURNED_TO_VENDOR", user, payload.reason)
     await db.invoices.update_one(
@@ -677,7 +677,7 @@ async def analytics_summary(user: dict = Depends(get_current_user)):
 
 
 def _stage_duration_hours(history: List[dict], idx: int, invoice_status: str) -> Optional[float]:
-    """Hours spent in history[idx]'s stage, or None when the stage is open & terminal (PAID)."""
+    """Hours spent in history[idx]'s stage, or None when the stage is open & terminal (PROCESSED)."""
     h = history[idx]
     start = _parse_iso(h["entered_at"])
     is_last = idx + 1 >= len(history)
