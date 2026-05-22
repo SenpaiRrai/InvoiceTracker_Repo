@@ -99,7 +99,7 @@ const InvoiceDetail = () => {
   }
 
   const nextStage = getNextStage(inv.status);
-  const isFinal = inv.status === "PAID";
+  const isFinal = inv.status === "PROCESSED";
   const isReturned = inv.status === "RETURNED_TO_VENDOR";
 
   return (
