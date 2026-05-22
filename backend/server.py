@@ -464,7 +464,7 @@ async def list_invoices(
 
 @api_router.get("/invoices/stuck")
 async def stuck_invoices(user: dict = Depends(get_current_user)):
-    items = await db.invoices.find({"status": {"$nin": ["PAID", "RETURNED_TO_VENDOR"]}}, {"_id": 0}).to_list(2000)
+    items = await db.invoices.find({"status": {"$nin": ["PROCESSED", "RETURNED_TO_VENDOR"]}}, {"_id": 0}).to_list(2000)
     stuck = []
     for inv in items:
         h = _hours_in_stage(inv.get("history", []), inv.get("status", ""))
@@ -518,7 +518,7 @@ async def advance_invoice(invoice_id: str, payload: StageAdvanceRequest, user: d
         extra["grn_number"] = payload.grn_number
         update["grn_number"] = payload.grn_number
 
-    if next_stage == "PAID":
+    if next_stage == "PROCESSED":
         update["completed_at"] = _iso_now()
 
     history_entry = _build_history_entry(next_stage, user, payload.notes or "", extra)
@@ -656,8 +656,8 @@ def _compute_stage_distribution(invoices: List[dict]) -> dict:
 @api_router.get("/analytics/summary")
 async def analytics_summary(user: dict = Depends(get_current_user)):
     invoices = await db.invoices.find({}, {"_id": 0}).to_list(5000)
-    in_flight = [i for i in invoices if i["status"] not in {"PAID", "RETURNED_TO_VENDOR"}]
-    paid = [i for i in invoices if i["status"] == "PAID"]
+    in_flight = [i for i in invoices if i["status"] not in {"PROCESSED", "RETURNED_TO_VENDOR"}]
+    paid = [i for i in invoices if i["status"] == "PROCESSED"]
     returned = [i for i in invoices if i["status"] == "RETURNED_TO_VENDOR"]
     stuck = [i for i in invoices if _is_stuck(i)]
     avg_hours = _compute_avg_paid_hours(paid)
@@ -682,7 +682,7 @@ def _stage_duration_hours(history: List[dict], idx: int, invoice_status: str) ->
     start = _parse_iso(h["entered_at"])
     is_last = idx + 1 >= len(history)
     if is_last:
-        if invoice_status == "PAID":
+        if invoice_status == "PROCESSED":
             return None
         end = datetime.now(timezone.utc)
     else:
@@ -730,7 +730,7 @@ async def vendor_stats(user: dict = Depends(get_current_user)):
             vendors[v] = {"vendor_name": v, "total": 0, "paid": 0, "returned": 0, "in_flight": 0, "total_amount": 0.0, "avg_hours": 0.0, "hours_sum": 0.0, "paid_count": 0}
         vendors[v]["total"] += 1
         vendors[v]["total_amount"] += float(inv.get("amount", 0))
-        if inv["status"] == "PAID":
+        if inv["status"] == "PROCESSED":
             vendors[v]["paid"] += 1
             try:
                 start = _parse_iso(inv["created_at"])
