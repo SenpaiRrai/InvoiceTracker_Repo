@@ -167,6 +167,7 @@ class InvoiceCreate(BaseModel):
     vendor_name: str
     invoice_number: str
     invoice_date: str  # ISO date
+    invoice_receiving_date: str | None = None
     amount: float
     po_reference: Optional[str] = ""
     description: Optional[str] = ""
@@ -417,6 +418,7 @@ async def create_invoice(payload: InvoiceCreate, user: dict = Depends(get_curren
         "vendor_name": payload.vendor_name,
         "invoice_number": payload.invoice_number,
         "invoice_date": payload.invoice_date,
+        "invoice_receiving_date": payload.invoice_receiving_date,
         "amount": float(payload.amount),
         "po_reference": payload.po_reference or "",
         "description": payload.description or "",
