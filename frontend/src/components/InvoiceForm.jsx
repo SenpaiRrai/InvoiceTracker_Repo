@@ -28,8 +28,8 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
       setForm({
         vendor_name: invoice.vendor_name || "",
         invoice_number: invoice.invoice_number || "",
-        invoice_receiving_date: invoice.invoice_receiving_date?.split("T")[0] || "",
         invoice_date: invoice.invoice_date?.split("T")[0] || "",
+        invoice_receiving_date: invoice.invoice_receiving_date?.split("T")[0] || "",
         amount: invoice.amount || "",
         po_reference: invoice.po_reference || "",
         description: invoice.description || "",
