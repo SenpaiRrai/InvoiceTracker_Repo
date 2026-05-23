@@ -15,6 +15,7 @@ const InvoiceMetaCard = ({ inv }) => (
       <Row label="Vendor"><div className="font-semibold">{inv.vendor_name}</div></Row>
       <Row label="Amount"><div className="font-mono-data font-semibold text-lg">{formatCurrency(inv.amount)}</div></Row>
       <Row label="Invoice Date">{formatDateTime(inv.invoice_date)}</Row>
+      <Row label="Invoice Receiving Date">{inv.invoice_receiving_date ? formatDateTime(inv.invoice_receiving_date): "—"}</Row>
       <Row label="PO/WO Reference"><div className="font-mono-data">{inv.po_reference || "—"}</div></Row>
       <Row label="GRN/SRN Number"><div className="font-mono-data">{inv.grn_number || "—"}</div></Row>
       <Row label="Created">
