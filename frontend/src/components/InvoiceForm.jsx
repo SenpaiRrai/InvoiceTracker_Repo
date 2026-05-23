@@ -14,6 +14,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
     vendor_name: "",
     invoice_number: "",
     invoice_date: new Date().toISOString().split("T")[0],
+    invoice_receiving_date: "",
     amount: "",
     po_reference: "", // Updated name to match your new scheme
     description: "",
@@ -27,6 +28,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
       setForm({
         vendor_name: invoice.vendor_name || "",
         invoice_number: invoice.invoice_number || "",
+        invoice_receiving_date: invoice.invoice_receiving_date?.split("T")[0] || "",
         invoice_date: invoice.invoice_date?.split("T")[0] || "",
         amount: invoice.amount || "",
         po_reference: invoice.po_reference || "",
@@ -42,6 +44,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
       vendor_name: "",
       invoice_number: "",
       invoice_date: new Date().toISOString().split("T")[0],
+      invoice_receiving_date: "",
       amount: "",
       po_reference: "",
       description: "",
@@ -123,6 +126,12 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
                 type="date"
                 value={form.invoice_date}
                 onChange={(e) => setForm({ ...form, invoice_date: e.target.value })}
+                className="mt-2 rounded-none border-[#E5E7EB]"
+              />
+              <Input
+                type="date"
+                value={form.invoice_receiving_date}
+                onChange={(e) => setForm({ ...form, invoice_receiving_date: e.target.value,})}
                 className="mt-2 rounded-none border-[#E5E7EB]"
               />
             </div>
