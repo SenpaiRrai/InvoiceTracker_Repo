@@ -14,7 +14,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
     vendor_name: "",
     invoice_number: "",
     invoice_date: new Date().toISOString().split("T")[0],
-    invoice_receiving_date: "",
+    invoice_receiving_date: new Date().toISOString().split("T")[0],
     amount: "",
     po_reference: "", // Updated name to match your new scheme
     description: "",
@@ -44,7 +44,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
       vendor_name: "",
       invoice_number: "",
       invoice_date: new Date().toISOString().split("T")[0],
-      invoice_receiving_date: "",
+      invoice_receiving_date: new Date().toISOString().split("T")[0],
       amount: "",
       po_reference: "",
       description: "",
@@ -128,6 +128,7 @@ const InvoiceForm = ({ open, onOpenChange, onCreated, invoice }) => {
                 onChange={(e) => setForm({ ...form, invoice_date: e.target.value })}
                 className="mt-2 rounded-none border-[#E5E7EB]"
               />
+              <Label className="label-caps">Invoice Receiving Date</Label>
               <Input
                 type="date"
                 value={form.invoice_receiving_date}
