@@ -265,6 +265,13 @@ def _is_stuck(inv: dict) -> bool:
         return False
     return _hours_in_stage(inv.get("history", []), inv.get("status", "")) >= STUCK_DAYS * 24
 
+def _stuck_level(days: float) -> str:
+    if days >= 30: return "URGENT"
+    if days >= 14: return "CRITICAL"
+    if days >= 7: return "ESCALATION"
+    if days >= 3: return "REMINDER"
+    return "NORMAL"
+
 
 # ---------------------------------------------------------------------------
 # Startup
@@ -461,6 +468,7 @@ async def list_invoices(
     for inv in items:
         inv["hours_in_current_stage"] = round(_hours_in_stage(inv.get("history", []), inv.get("status", "")), 2)
         inv["is_stuck"] = _is_stuck(inv)
+        inv["stuck_level"] = _stuck_level(inv["hours_in_current_stage"] / 24)
     return items
 
 
@@ -473,6 +481,7 @@ async def stuck_invoices(user: dict = Depends(get_current_user)):
         if h >= STUCK_DAYS * 24:
             inv["hours_in_current_stage"] = round(h, 2)
             inv["days_in_current_stage"] = round(h / 24, 2)
+            inv["stuck_level"] = _stuck_level(days)
             stuck.append(inv)
     return stuck
 
@@ -850,7 +859,7 @@ async def cron_digest(secret: str):
         f"<tr><td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['invoice_number']}</td>"
         f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['vendor_name']}</td>"
         f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{STAGE_LABELS.get(i['status'], i['status'])}</td>"
-        f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['days_in_current_stage']} d</td></tr>"
+        f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['days_in_current_stage']} d ({i['stuck_level']})</td></tr>"
         for i in stuck
     )
 
@@ -871,7 +880,7 @@ async def cron_digest(secret: str):
 
     email_id = await send_email(
         recipient_list,
-        f"[InvoiceFlow] {len(stuck)} invoices stuck",
+        f"[InvoiceFlow] {max(i['stuck_level'] for i in stuck)} ALERT — {len(stuck)} invoices stuck",
         html
     )
 
