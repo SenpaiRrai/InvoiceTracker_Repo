@@ -836,7 +836,46 @@ async def send_digest(user: dict = Depends(get_current_user)):
         html
     )
     return {"sent": bool(email_id), "count": len(stuck), "email_id": email_id, "no_api_key": not bool(RESEND_API_KEY)}
+@api_router.get("/notifications/cron-digest")
+async def cron_digest(secret: str):
+    if secret != os.environ.get("CRON_SECRET"):
+        raise HTTPException(status_code=403, detail="Invalid secret")
 
+    stuck = await stuck_invoices({"role": "admin"})
+
+    if not stuck:
+        return {"sent": False, "reason": "no stuck invoices"}
+
+    rows = "".join(
+        f"<tr><td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['invoice_number']}</td>"
+        f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['vendor_name']}</td>"
+        f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{STAGE_LABELS.get(i['status'], i['status'])}</td>"
+        f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['days_in_current_stage']} d</td></tr>"
+        for i in stuck
+    )
+
+    html = f"""
+    <div style='font-family:Arial,sans-serif;color:#09090B;max-width:640px'>
+      <h2>Invoices stuck &gt; {STUCK_DAYS} days</h2>
+      <table cellspacing='0' cellpadding='0' style='width:100%;border-collapse:collapse'>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>
+    """
+
+    recipient_list = [
+        email.strip()
+        for email in DIGEST_RECIPIENTS.split(",")
+        if email.strip()
+    ]
+
+    email_id = await send_email(
+        recipient_list,
+        f"[InvoiceFlow] {len(stuck)} invoices stuck",
+        html
+    )
+
+    return {"sent": bool(email_id)}
 # 1. Delete an entire invoice
 @api_router.delete("/invoices/{invoice_id}")
 async def delete_invoice(invoice_id: str, user: dict = Depends(get_current_user)):
