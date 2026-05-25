@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { LayoutDashboard, FileText, BarChart3, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, BarChart3, LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROLE_LABELS } from "@/lib/constants";
 
@@ -17,6 +17,7 @@ const Layout = ({ children }) => {
   const { user, logout } = useAuth();
   const loc = useLocation();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -24,8 +25,9 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#F8F9FA]">
-      <aside className="hidden md:flex md:w-[240px] border-r border-[#E5E7EB] bg-white flex-col" data-testid="sidebar">
+    <div className="min-h-screen flex bg-[#F8F9FA] relative">
+      <aside className={`fixed md:relative z-40 top-0 left-0 h-full w-[240px] border-r border-[#E5E7EB] bg-white flex flex-col transform transition-transform duration-300 ${ sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0" }`}
+  data-testid="sidebar">
         <div className="px-6 py-5 border-b border-[#E5E7EB]">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-[#09090B] flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -44,6 +46,7 @@ const Layout = ({ children }) => {
             const active = loc.pathname === item.to || (item.to !== "/" && loc.pathname.startsWith(item.to));
             return (
               <Link
+                onClick={() => setSidebarOpen(false)}
                 key={item.to}
                 to={item.to}
                 data-testid={item.test}
@@ -75,15 +78,25 @@ const Layout = ({ children }) => {
           </Button>
         </div>
       </aside>
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/40 z-30 md:hidden" onClick={() => setSidebarOpen(false)} /> )}
 
       <div className="flex-1 flex flex-col overflow-x-hidden">
-        <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-white">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-white">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-[#F4F4F5] rounded">
+            {sidebarOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
+
           <div className="font-display font-black text-lg tracking-tight">
             InvoiceFlow
           </div>
         </div>
 
-        <main className="flex-1 overflow-x-hidden">
+        <main className="flex-1 overflow-x-hidden md:ml-0">
           {children}
         </main>
       </div>
