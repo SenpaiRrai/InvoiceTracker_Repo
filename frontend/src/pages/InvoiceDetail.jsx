@@ -116,7 +116,7 @@ const InvoiceDetail = () => {
             <StatusPill status={inv.status} stuck={inv.is_stuck} />
             {inv.is_stuck && (
               <span className="text-xs text-[#E11D48] font-semibold">
-                Stuck for {(inv.hours_in_current_stage / 24).toFixed(1)} days
+                Stuck for {inv.stuck_level} · Stuck for {(inv.hours_in_current_stage / 24).toFixed(1)} days
               </span>
             )}
           </div>
