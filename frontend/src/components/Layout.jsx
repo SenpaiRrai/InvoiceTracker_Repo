@@ -26,17 +26,19 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen flex bg-[#F8F9FA] relative">
-      <aside className={`fixed md:relative z-40 top-0 left-0 h-full w-[240px] border-r border-[#E5E7EB] bg-white flex flex-col transform transition-transform duration-300 ${ sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0" }`}
+      <aside className={`z-40 h-screen border-r border-[#E5E7EB] bg-white flex flex-col transition-all duration-300 overflow-hidden ${sidebarOpen ? "w-[240px]" : "w-[70px]" }`}
   data-testid="sidebar">
         <div className="px-6 py-5 border-b border-[#E5E7EB]">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-[#09090B] flex items-center justify-center flex-shrink-0 overflow-hidden">
               <img src={LOGO_URL} alt="MTMC" className="w-full h-full object-contain" />
             </div>
-            <div className="min-w-0">
-              <div className="font-display font-black text-lg leading-none tracking-tight">InvoiceFlow</div>
-              <div className="text-[9px] tracking-[0.18em] uppercase text-[#7A1A2C] mt-1 font-semibold">MTMC · Stores</div>
-            </div>
+            {sidebarOpen && (
+              <div className="min-w-0">
+                <div className="font-display font-black text-lg leading-none tracking-tight">InvoiceFlow</div>
+                <div className="text-[9px] tracking-[0.18em] uppercase text-[#7A1A2C] mt-1 font-semibold">MTMC · Stores</div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -57,16 +59,20 @@ const Layout = ({ children }) => {
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                {item.label}
+                {sidebarOpen && item.label}
               </Link>
             );
           })}
         </nav>
 
         <div className="px-6 py-4 border-t border-[#E5E7EB]">
+          {sidebarOpen && (
+          <>
           <div className="text-xs text-[#52525B] mb-1">Signed in as</div>
           <div className="font-semibold text-sm truncate" data-testid="user-name">{user?.name}</div>
           <div className="text-xs text-[#52525B] mb-3">{ROLE_LABELS[user?.role] || user?.role}</div>
+          </>
+          )}
           <Button
             variant="outline"
             size="sm"
