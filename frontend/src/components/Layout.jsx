@@ -88,7 +88,7 @@ const Layout = ({ children }) => {
         <div className="fixed inset-0 bg-black/40 z-30 md:hidden" onClick={() => setSidebarOpen(false)} /> )}
 
       <div className="flex-1 flex flex-col overflow-x-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-white">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-white sticky top-0 z-20">
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-[#F4F4F5] rounded">
             {sidebarOpen ? (
               <X className="w-5 h-5" />
