@@ -481,7 +481,7 @@ async def stuck_invoices(user: dict = Depends(get_current_user)):
         if h >= STUCK_DAYS * 24:
             inv["hours_in_current_stage"] = round(h, 2)
             inv["days_in_current_stage"] = round(h / 24, 2)
-            inv["stuck_level"] = _stuck_level(days)
+            inv["stuck_level"] = _stuck_level(inv["days_in_current_stage"])
             stuck.append(inv)
     return stuck
 
