@@ -855,22 +855,44 @@ async def cron_digest(secret: str):
     if not stuck:
         return {"sent": False, "reason": "no stuck invoices"}
 
-    rows = "".join(
-        f"<tr><td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['invoice_number']}</td>"
-        f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['vendor_name']}</td>"
-        f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{STAGE_LABELS.get(i['status'], i['status'])}</td>"
-        f"<td style='padding:8px;border-bottom:1px solid #E5E7EB'>{i['days_in_current_stage']} d ({i['stuck_level']})</td></tr>"
-        for i in stuck
-    )
+    urgent = [i for i in stuck if i["stuck_level"] == "URGENT"]
+    critical = [i for i in stuck if i["stuck_level"] == "CRITICAL"]
+    escalation = [i for i in stuck if i["stuck_level"] == "ESCALATION"]
+    reminder = [i for i in stuck if i["stuck_level"] == "REMINDER"]
+    def build_rows(items):
+        return "".join(
+            f"<tr>"
+            f"<td>{i['invoice']}</td>"
+            f"<td>{i['vendor_name']}</td>"
+            f"<td>{STAGE_LABELS.get(i['status'], i['status'])}</td>"
+            f"<i['days_in_current_stage']}d</td>"
+            f"</tr>
+            for i in items
+            )
+
 
     html = f"""
-    <div style='font-family:Arial,sans-serif;color:#09090B;max-width:640px'>
-      <h2>Invoices stuck &gt; {STUCK_DAYS} days</h2>
-      <table cellspacing='0' cellpadding='0' style='width:100%;border-collapse:collapse'>
-        <tbody>{rows}</tbody>
-      </table>
-    </div>
-    """
+            <div style='font-family:Arial, sans-serif'>
+                      <h2>InvoiceFlow Daily Action Report</h2>
+                      <p>Total Stuck Invoices: {len(stuck)}</p>
+
+                      <h3>URGENT (>30 Days) - {len(urgent)}</h3>
+                      <table>{build_rows(urgent)}</table>
+
+                      <h3>CRITICAL (>14 Days) - {len(critical)}</h3>
+                      <table>{build_rows(critical)}</table>
+
+                      <h3>ESCALATION (>7 Days) - {len(escalation)}</h3>
+                      <table>{build_rows(escalation)}</table>
+
+                      <h3>REMINDER (>3 Days) - {len(reminder)}</h3>
+                      <table>{build_rows(reminder)}</table>
+
+            </div>
+            """
+
+                      
+
 
     recipient_list = [
         email.strip()
@@ -880,7 +902,7 @@ async def cron_digest(secret: str):
 
     email_id = await send_email(
         recipient_list,
-        f"[InvoiceFlow] {max(i['stuck_level'] for i in stuck)} ALERT — {len(stuck)} invoices stuck",
+        f"[InvoiceFlow] Daily Stuck Invoice Report - {len(stuck)} Open Items",
         html
     )
 
