@@ -866,7 +866,7 @@ async def cron_digest(secret: str):
             f"<td>{i['vendor_name']}</td>"
             f"<td>{STAGE_LABELS.get(i['status'], i['status'])}</td>"
             f"<td>{i['days_in_current_stage']}d</td>"
-            f"</tr>
+            f"</tr>"
             for i in items
             )
 
