@@ -12,7 +12,7 @@ import asyncio
 import logging
 import secrets
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import bcrypt
 import jwt
@@ -862,7 +862,7 @@ async def cron_digest(secret: str):
     def build_rows(items):
         return "".join(
             f"<tr>"
-            f"<td>{i['invoice']}</td>"
+            f"<td>{i['invoice_number']}</td>"
             f"<td>{i['vendor_name']}</td>"
             f"<td>{STAGE_LABELS.get(i['status'], i['status'])}</td>"
             f"<td>{i['days_in_current_stage']}d</td>"
