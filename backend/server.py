@@ -902,7 +902,7 @@ async def cron_digest(secret: str):
 
     email_id = await send_email(
         recipient_list,
-        f"[InvoiceFlow] Daily Stuck Invoice Report - {len(stuck)} Open Items",
+        f"[InvoiceFlow] Daily Stuck Invoice Report - {len(stuck)} Stuck Invoice",
         html
     )
 
