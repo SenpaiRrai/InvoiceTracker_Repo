@@ -11,8 +11,8 @@ const LOGO_URL = "https://customer-assets.emergentagent.com/job_invoice-status-p
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("cajoprice@gmail.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -88,6 +88,7 @@ const Login = () => {
               <Input
                 id="email"
                 type="email"
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
@@ -101,6 +102,7 @@ const Login = () => {
               <Input
                 id="password"
                 type="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
