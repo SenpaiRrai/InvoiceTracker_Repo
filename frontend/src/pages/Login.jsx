@@ -88,7 +88,6 @@ const Login = () => {
               <Input
                 id="email"
                 type="email"
-                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
@@ -102,7 +101,6 @@ const Login = () => {
               <Input
                 id="password"
                 type="password"
-                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
